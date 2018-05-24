@@ -1,0 +1,47 @@
+# Migration configuration for nodes
+id: aidsfree_node_hts_kb
+label: Aidsfree HTS KB nodes from D7 site
+migration_group: aidsfree_nodes
+migration_dependencies: {}
+source:
+  plugin: node_hts_kbs_src_plugin
+destination:
+  plugin: entity:node
+process:
+  nid: nid
+  vid: vid
+  bundle: type
+  type: type
+  #type:
+   # plugin: node_body_field_create
+   # source: type
+  title: title
+  langcode:
+    plugin: default_value
+    default_value: en
+  uid: uid
+  status:
+    plugin: default_value
+    default_value: 1
+  created: created
+  changed: changed
+  comment:
+    plugin: default_value
+    default_value: 0
+  promote:
+    plugin: default_value
+    default_value: 0
+  sticky:
+    plugin: default_value
+    default_value: 0
+  'body/value': body_value
+    #plugin: node_body
+    #source: body_value
+  'body/summary': body_summary
+  'body/format': body_format
+dependencies:
+  module:
+    - node
+  enforced:
+    module:
+      - aidsfree_migrate_collections

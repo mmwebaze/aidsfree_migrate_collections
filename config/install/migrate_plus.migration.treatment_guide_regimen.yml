@@ -1,0 +1,35 @@
+# Migration configuration for users
+id: tg_regimen
+label: Treatment Guidelines Regimens
+migration_group: regimens
+migration_dependencies: {}
+source:
+  plugin: treatment_guide_regimen_sql
+destination:
+  plugin: 'treatment_guide_regimen_dest'
+
+process:
+  nid: nid
+  type:
+    plugin: default_value
+    default_value: regimen
+  title: title
+  field_first_line_value: field_first_line_value
+  field_first_line_format:
+    plugin: default_value
+    default_value: full_html
+  field_second_line_value: field_second_line_value
+  field_second_line_format:
+    plugin: default_value
+    default_value: full_html
+  field_third_line_value: field_third_line_value
+  field_third_line_format:
+    plugin: default_value
+    default_value: full_html
+
+dependencies:
+  module:
+    - node
+  enforced:
+    module:
+      - aidsfree_migrate_collections

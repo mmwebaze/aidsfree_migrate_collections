@@ -1,0 +1,7 @@
+<?php
+/**
+ * Implements hook_uninstall().
+ */
+function aidsfree_migrate_collections_uninstall() {
+  Drupal::configFactory()->getEditable('migrate_plus.migration.treatment_guide_regimen')->delete();
+}

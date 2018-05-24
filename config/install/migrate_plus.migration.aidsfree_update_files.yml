@@ -1,0 +1,38 @@
+# Migration configuration for users
+id: aidsfree_update_files
+label: Aidsfree files
+#migration_group: aidsfree_collections
+source:
+  plugin: aidsfree_files
+  key: migrate
+destination:
+  plugin: 'entity:file'
+
+process:
+  fid:
+    -
+      plugin: fid_exists
+      source: fid
+      entity_type: file
+    -
+      plugin: skip_on_empty
+      method: row
+      message: 'File exists or already migrated'
+  uid: uid
+  type: type
+  filename: filename
+  filesize: filesize
+  filename: filename
+  langcode:
+    plugin: default_value
+    default_value: en
+  timestamp: timestamp
+  uri: uri
+  status:
+    plugin: default_value
+    default_value: 1
+
+migration_dependencies: {}
+dependencies:
+  module:
+    - aidsfree_migrate_collections
