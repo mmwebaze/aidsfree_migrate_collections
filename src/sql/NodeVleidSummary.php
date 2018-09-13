@@ -68,6 +68,7 @@ class NodeVleidSummary {
         'field_order' => ['value' => $result->field_order_value],
         'field_link' => $this->getResults($result->nid, 'link'),
         'field_vl_eid_type' => $this->getResults($result->nid, 'field_vl_eid_type'),
+        'field_vl_eid_section' => $this->getResults($result->nid, 'field_vl_eid_section'),
       );
 
       $node = \Drupal\node\Entity\Node::create($newNode);
@@ -103,6 +104,18 @@ class NodeVleidSummary {
         array_push($vleidType, ['target_id' => $result->field_vl_eid_type_tid]);
       }
       return $vleidType;
+    }
+    else if ($field == 'field_vl_eid_section'){
+      $query = $this->database->select('field_data_field_vl_eid_section', 's');
+      $query->fields('s', ['field_vl_eid_section_tid']);
+      $query->condition('s.entity_id', $nid, '=');
+      $results = $query->execute();
+      Database::setActiveConnection();
+      $vleidSections = [];
+      foreach ($results as $result) {
+        array_push($vleidSections, ['target_id' => $result->field_vl_eid_section_tid]);
+      }
+      return $vleidSections;
     }
     else{
 

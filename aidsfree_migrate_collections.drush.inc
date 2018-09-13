@@ -74,7 +74,7 @@ function drush_aidsfree_migrate_collections_nodes($arg = NULL){
         if(!isset($node)){
           print($i.' -> '.$result->nid.' - '.$result->title."\n");
           $i++;
-          $vleid->create($result);die($result->title.' created');
+          $vleid->create($result);
           //print($result->nid.' has not been migrated'."\n");
         }
       }
