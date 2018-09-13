@@ -4,12 +4,17 @@ use \Drupal\aidsfree_migrate_collections\sql\TreatmentGuidelineSql;
 use \Drupal\aidsfree_migrate_collections\sql\EventsSql;
 use \Drupal\aidsfree_migrate_collections\sql\EventCollections;
 use \Drupal\aidsfree_migrate_collections\sql\NodeHtskb;
+use \Drupal\aidsfree_migrate_collections\sql\NodeVleidSummary;
 
 /**
  * Implements hook_drush_command().
  */
 function aidsfree_migrate_collections_drush_command(){
   $items = array();
+  $items['aidsfree_migrate_collections-filesize'] = [
+    'description' => 'Update file sizes',
+    'aliases' => ['amfs'],
+  ];
   $items['aidsfree_migrate_collections-update'] = [
     'description' => 'Test remote database connect',
     'arguments' => [
@@ -26,9 +31,10 @@ function aidsfree_migrate_collections_drush_command(){
     'arguments' => [
       'node_type' => 'The node type machine name.',
     ],
-    'aliases' => ['amckb'],
+    'aliases' => ['amcn'],
     'examples' => [
-      'drush amckb hts_kb_summaries' => 'Migrates HTS KB content type.',
+      'drush amcn hts_kb_summaries' => 'Migrates HTS KB content type.',
+      'drush amcn vleid' => 'Migrates VLEID Summaries Content'
     ],
   ];
   return $items;
@@ -36,7 +42,7 @@ function aidsfree_migrate_collections_drush_command(){
 
 function drush_aidsfree_migrate_collections_nodes($arg = NULL){
   drush_print(dt('Migrating nodes \''.$arg.'\'. from D7 to D8.'));
-  $supportedNodeTypes = ['hts_kb_summaries'];
+  $supportedNodeTypes = ['hts_kb_summaries', 'vleid'];
 
   $db = NULL;
   if(isset($arg)){
@@ -56,12 +62,27 @@ function drush_aidsfree_migrate_collections_nodes($arg = NULL){
         createNode($result, $tbsKbNode);
       }
       break;
+    case 'vleid':
+      print('Migrate vleid content');
+      $vleid = new NodeVleidSummary($db);
+      $results = $vleid->query();
+      resetConnection();
+      $i = 0;
+      foreach ($results as $result){
+        $node = getNode($result->title, $result->type, 'title');
+
+        if(!isset($node)){
+          print($i.' -> '.$result->nid.' - '.$result->title."\n");
+          $i++;
+          $vleid->create($result);die($result->title.' created');
+          //print($result->nid.' has not been migrated'."\n");
+        }
+      }
+
+      break;
     default:
       drush_print(dt('Content Type \''.$arg.'\' not supported. Possible types: '.implode(',', $supportedNodeTypes)));
   }
-
-
-
 }
 function drush_aidsfree_migrate_collections_update($arg = NULL){
   $supportedCollections = ['treatment', 'events'];
@@ -363,5 +384,35 @@ function createNode($result, NodeHtskb $queryObject){
   }
   else{
     print('Node with id '.$result->nid." has already been created \n");
+  }
+}
+
+function drush_aidsfree_migrate_collections_filesize(){
+  drush_print('File size...dd');
+  $db = getDatabaseConnection();
+  $query = $db->select('file_managed', 'fm')
+    ->fields('fm', ['fid', 'filename', 'filesize'])->condition('filesize', 0);
+  $results = $query->execute();
+  //resetConnection();
+  $i = 0;
+
+  foreach ($results as $result){
+
+    print($result->filename.' -- '.$result->filesize."\n");
+
+    $srcDb = getDatabaseConnection('migrate');
+    $migrateQuery = $srcDb->select('file_managed', 'fm')
+      ->fields('fm', ['fid', 'filename', 'filesize'])
+      ->condition('filename', $result->filename);
+    $migrateResults = $migrateQuery->execute();
+
+    foreach ($migrateResults as $migrateResult){
+      print('src: '.$migrateResult->filename.' -- '.$migrateResult->filesize."\n");
+      $updateQuery = $db->update('file_managed')->fields(['filesize' => $migrateResult->filesize])
+      ->condition('filename', $result->filename);
+      $updateQuery->execute();
+    }
+    $i++;
+    print($i."\n");
   }
 }
